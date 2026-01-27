@@ -81,7 +81,7 @@ int RemoveTags::removeTags(std::filesystem::path path)
 	std::ifstream file_stream(path, std::ios::binary);
 	if (!file_stream.is_open())
 	{
-		std::println("Cannot open file!");
+		//std::println("Cannot open file!");
 		return -1;
 	}
 
@@ -104,7 +104,7 @@ int RemoveTags::removeTags(std::filesystem::path path)
 
 		if (!file_stream.read(buffer.data(), size_new))
 		{
-			std::println("Error reading the file!");
+			//std::println("Error reading the file!");
 			file_stream.close();
 			return -1;
 		}
@@ -114,13 +114,13 @@ int RemoveTags::removeTags(std::filesystem::path path)
 		std::ofstream file_stream(path, std::ios::binary | std::ios::trunc);
 		if (!file_stream.is_open())
 		{
-			std::println("Cannot open file for writing!");
+			//std::println("Cannot open file for writing!");
 			return -1;
 		}
 
 		if (!file_stream.write(buffer.data(), size_new))
 		{
-			std::println("Error writing to file!");
+			//std::println("Error writing to file!");
 			file_stream.close();
 			return -1;
 		}
@@ -136,30 +136,34 @@ int RemoveTags::removeTags(std::filesystem::path path)
 }
 
 
-/*int main()
+int RemoveTags::processFolder(QLineEdit& lineEdit, std::filesystem::path input_path)
 {
+	/*
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
 
 	std::println("[x] ID3 TAG REMOVE [x]");
 	std::println("");
 	std::print("Enter folder path: ");
+	*/
+	
+	
+	//std::string input;
+	//std::getline(std::cin, input);
+	//std::u8string u8input(input.begin(), input.end());
+	//std::filesystem::path input_path(u8input);
 
-	std::string input;
-	std::getline(std::cin, input);
-	std::u8string u8input(input.begin(), input.end());
-	std::filesystem::path input_path(u8input);
-
-	std::println("");
+	//std::println("");
 
 	if (!std::filesystem::exists(input_path) ||
 		!std::filesystem::is_directory(input_path))
 	{
-		std::println("Folder not found!");
+		lineEdit.setText("Folder not found!");
+		//std::println("Folder not found!");
 		return 0;
 	}
 
-	std::print(">> Scanning files for tags...");
+	//std::print(">> Scanning files for tags...");
 
 	int files_found = 0;
 	int files_scanned = 0;
@@ -186,6 +190,8 @@ int RemoveTags::removeTags(std::filesystem::path path)
 		}
 	}
 
+
+	/*
 	std::println("");
 	std::println("");
 	std::println("* Files found   : {}", files_found);
@@ -193,5 +199,5 @@ int RemoveTags::removeTags(std::filesystem::path path)
 	std::println("* Files updated : {}", files_updated);
 	std::println("* Files ignored : {} (access/read/write errors)", files_ignored);
 	std::println("");
-	std::println("----- Scan complete -----");
-}*/
+	std::println("----- Scan complete -----");*/
+}

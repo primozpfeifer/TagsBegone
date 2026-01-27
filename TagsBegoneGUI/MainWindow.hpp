@@ -2,6 +2,8 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
+#include <filesystem>
+#include "RemoveTags.hpp"
 
 
 class MainWindow : public QMainWindow
@@ -26,5 +28,6 @@ private:
     QAction* openFolderAct;
     QAction* exitAct;
     QLineEdit* lineEdit;
+    QPushButton* pbRemoveTags;
 };
 

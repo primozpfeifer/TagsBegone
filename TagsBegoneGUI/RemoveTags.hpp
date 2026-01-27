@@ -1,13 +1,12 @@
 #pragma once
 
-#include <print>
 #include <filesystem>
 #include <fstream>
 #include <bitset>
-#include <iostream>
 #include <Windows.h>
 #include <vector>
 #include <array>
+#include <QLineEdit>
 
 
 class RemoveTags
@@ -48,6 +47,7 @@ class RemoveTags
 	};
 
 
+  public:
 
 	RemoveTags();
 
@@ -59,4 +59,6 @@ class RemoveTags
 	int get_ape_size(std::ifstream& _file_stream, std::streamsize _id3v1_offset);
 	
 	int removeTags(std::filesystem::path path);
+	
+	int processFolder(QLineEdit& lineEdit, std::filesystem::path input_path);
 };
