@@ -2,32 +2,37 @@
 
 #include <QMainWindow>
 #include <QtWidgets>
+
 #include <filesystem>
 #include "RemoveTags.hpp"
 
 
 class MainWindow : public QMainWindow
 {
+    Q_OBJECT
+
 public:
+
     MainWindow();
 
 
-private slots:
-    void openFiles();
-    void openFolder();
-
-
 private:
-    void createWidgets();
-    void createActions();
-    void createMenus();
 
-    //QMenuBar* menuBar;
-    QMenu* fileMenu;
-    QAction* openFilesAct;
-    QAction* openFolderAct;
-    QAction* exitAct;
-    QLineEdit* lineEdit;
-    QPushButton* pbRemoveTags;
+    void createMenus();
+    void createWidgets();
+
+    QLineEdit* lineEdit_source;
+    QCheckBox* checkBox_subdirs;
+    QPushButton* button_removeTags;
+    QCheckBox* checkBox_id3v1;
+    QCheckBox* checkBox_id3v2;
+    QCheckBox* checkBox_apev2;
+
+
+private slots:
+
+    void openFile();
+    void openFolder();
+    void removeTags();
 };
 

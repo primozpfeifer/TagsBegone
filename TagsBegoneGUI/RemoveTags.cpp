@@ -76,9 +76,10 @@ int RemoveTags::get_ape_size(std::ifstream& _file_stream, std::streamsize _id3v1
 	return 0;
 }
 
-int RemoveTags::removeTags(std::filesystem::path path)
+int RemoveTags::removeTags(std::filesystem::path path, bool id3v1, bool id3v2, bool apev2)
 {
 	std::ifstream file_stream(path, std::ios::binary);
+	file_stream.close(); // |----------------------------------------> remove this line, just for testing !!!!!
 	if (!file_stream.is_open())
 	{
 		//std::println("Cannot open file!");
@@ -135,35 +136,14 @@ int RemoveTags::removeTags(std::filesystem::path path)
 	return 0;
 }
 
-
-int RemoveTags::processFolder(QLineEdit& lineEdit, std::filesystem::path input_path)
+void RemoveTags::run(QStatusBar* statusBar, std::filesystem::path input_path, bool subdirs, bool id3v1, bool id3v2, bool apev2)
 {
-	/*
-	SetConsoleOutputCP(CP_UTF8);
-	SetConsoleCP(CP_UTF8);
-
-	std::println("[x] ID3 TAG REMOVE [x]");
-	std::println("");
-	std::print("Enter folder path: ");
-	*/
-	
-	
-	//std::string input;
-	//std::getline(std::cin, input);
-	//std::u8string u8input(input.begin(), input.end());
-	//std::filesystem::path input_path(u8input);
-
-	//std::println("");
-
 	if (!std::filesystem::exists(input_path) ||
 		!std::filesystem::is_directory(input_path))
 	{
-		lineEdit.setText("Folder not found!");
-		//std::println("Folder not found!");
-		return 0;
+		statusBar->showMessage("Directory not found or incorrect");
+		return;
 	}
-
-	//std::print(">> Scanning files for tags...");
 
 	int files_found = 0;
 	int files_scanned = 0;
@@ -183,21 +163,16 @@ int RemoveTags::processFolder(QLineEdit& lineEdit, std::filesystem::path input_p
 			{
 				files_scanned++;
 
-				int ret = removeTags(item.path());
+				int ret = removeTags(item.path(), id3v1, id3v2, apev2);
 				if (ret > 0) { files_updated++; }
 				else if (ret < 0) { files_ignored++; }
 			}
 		}
 	}
 
-
-	/*
-	std::println("");
-	std::println("");
-	std::println("* Files found   : {}", files_found);
-	std::println("* MP3s scanned  : {}", files_scanned);
-	std::println("* Files updated : {}", files_updated);
-	std::println("* Files ignored : {} (access/read/write errors)", files_ignored);
-	std::println("");
-	std::println("----- Scan complete -----");*/
+	statusBar->showMessage(
+		"Scan complete | Files scanned : " + QString::number(files_scanned) +
+		" | Files updated : " + QString::number(files_updated) +
+		" | Files ignored : " + QString::number(files_ignored)
+	);
 }

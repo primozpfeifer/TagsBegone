@@ -3,17 +3,17 @@
 #include <filesystem>
 #include <fstream>
 #include <bitset>
-#include <Windows.h>
 #include <vector>
 #include <array>
-#include <QLineEdit>
+
+#include <QStatusBar>
 
 
 class RemoveTags
 {
-	const int		_ID3V1_TAG_SIZE = 128;
-	const int		_ID3V2_HEADER_SIZE = 10;
-	const int		_APE_FOOTER_SIZE = 32;
+	static const int			_ID3V1_TAG_SIZE = 128;
+	static const int			_ID3V2_HEADER_SIZE = 10;
+	static const int			_APE_FOOTER_SIZE = 32;
 
 
 	struct id3v1_tag
@@ -47,18 +47,18 @@ class RemoveTags
 	};
 
 
-  public:
-
 	RemoveTags();
 
 
-	int decode_synchsafe(std::array<uint8_t, 4> _byte);
+	static int decode_synchsafe(std::array<uint8_t, 4> _byte);
+	static int get_id3v1_size(std::ifstream& _file_stream);
+	static int get_id3v2_size(std::ifstream& _file_stream);
+	static int get_ape_size(std::ifstream& _file_stream, std::streamsize _id3v1_offset);
 	
-	int get_id3v1_size(std::ifstream& _file_stream);
-	int get_id3v2_size(std::ifstream& _file_stream);
-	int get_ape_size(std::ifstream& _file_stream, std::streamsize _id3v1_offset);
-	
-	int removeTags(std::filesystem::path path);
-	
-	int processFolder(QLineEdit& lineEdit, std::filesystem::path input_path);
+	static int removeTags(std::filesystem::path path, bool id3v1, bool id3v2, bool apev2);
+
+
+public:
+
+	static void run(QStatusBar* statusBar, std::filesystem::path input_path, bool subdirs, bool id3v1, bool id3v2, bool apev2);
 };

@@ -5,116 +5,141 @@
 
 MainWindow::MainWindow()
 {
-    setWindowTitle(tr("Tags Begone"));
-    setMinimumSize(160, 160);
-    resize(450, 180);
-    
-
-    createWidgets();
-    createActions();
     createMenus();
+    createWidgets();
 
+    setWindowTitle("Tags Begone");
+    setFixedSize(500, 265);
+
+    statusBar()->showMessage("No directory specified...", 0);
+    statusBar()->setSizeGripEnabled(false);
 }
 
 
-void MainWindow::openFiles()
+void MainWindow::createMenus()
 {
-    //QString path = QFileDialog::getOpenFileName(this, "Choose a file or folder...");
-    
-    /*QFileDialog dialog(this);
-    QString path = dialog.getOpenFileName(this, tr("Select file(s)"), "", tr("Mp3 audio files (*.mp3)"));
+    // menu FILE
+    QMenu* menu_file = menuBar()->addMenu("&File");
 
-    if (!path.isEmpty()) {
-        //QFile file(path);
-        
+    QAction* act_openFile = new QAction("&Select file", this);
+    menu_file->addAction(act_openFile);
+    connect(act_openFile, &QAction::triggered, this, &MainWindow::openFile);
+    act_openFile->setStatusTip("Select file");
 
-        lineEdit->setText(path);
+    QAction* act_openFolder = new QAction("&Select folder", this);
+    menu_file->addAction(act_openFolder);
+    connect(act_openFolder, &QAction::triggered, this, &MainWindow::openFolder);
+    act_openFolder->setStatusTip("Select folder");
+
+    menu_file->addSeparator();
+
+    QAction* act_exit = new QAction("E&xit", this);
+    menu_file->addAction(act_exit);
+    connect(act_exit, &QAction::triggered, this, &QWidget::close);
+    act_exit->setStatusTip("Exit the application");
+
+    // menu ABOUT
+    QMenu* menu_about = menuBar()->addMenu("&About");
+
+    QAction* act_about = new QAction("&About", this);
+    menu_about->addAction(act_about);
+    connect(act_about, &QAction::triggered, this, &MainWindow::openFile);
+    act_about->setStatusTip("About the application");
+}
+
+void MainWindow::createWidgets()
+{
+    QWidget* widget = new QWidget;
+    setCentralWidget(widget);
+
+    // Group "Source directory"
+    QGroupBox* gbSource = new QGroupBox("Source directory", this);
+    lineEdit_source = new QLineEdit("No directory specified...");
+    lineEdit_source->setFixedHeight(30);
+    QToolButton* pbDirectory = new QToolButton(this);
+    pbDirectory->setText("...");
+    pbDirectory->setFixedSize(30, 30);
+    connect(pbDirectory, &QToolButton::clicked, this, &MainWindow::openFolder);
+    checkBox_subdirs = new QCheckBox(" Include subdirectories", this);
+    QVBoxLayout* vbox1 = new QVBoxLayout;
+    QHBoxLayout* hbox1 = new QHBoxLayout;
+    QHBoxLayout* hbox2 = new QHBoxLayout;
+    vbox1->setContentsMargins(10, 0, 10, 5);
+    hbox2->setContentsMargins(10, 0, 0, 0);
+    hbox1->addWidget(lineEdit_source);
+    hbox1->addWidget(pbDirectory);
+    vbox1->addLayout(hbox1);
+    hbox2->addWidget(checkBox_subdirs);
+    vbox1->addLayout(hbox2);
+    gbSource->setLayout(vbox1);
+    gbSource->setFixedHeight(100);
+
+    // Group "Remove Tags"
+    QGroupBox* gbTags = new QGroupBox("Remove tags", this);
+    checkBox_id3v1 = new QCheckBox(" ID3v1", this);
+    checkBox_id3v1->setChecked(true);
+    checkBox_id3v2 = new QCheckBox(" ID3v2", this);
+    checkBox_id3v2->setChecked(true);
+    checkBox_apev2 = new QCheckBox(" APEv2", this);
+    checkBox_apev2->setChecked(true);
+    button_removeTags = new QPushButton("START", this);
+    button_removeTags->setFixedSize(100, 40);
+    connect(button_removeTags, &QPushButton::clicked, this, &MainWindow::removeTags);
+    //pbRemoveTags->setDisabled(true);
+    QHBoxLayout* hbox3 = new QHBoxLayout;
+    hbox3->setSpacing(30);
+    hbox3->setContentsMargins(10, 0, 20, 5);
+    hbox3->addWidget(button_removeTags);
+    hbox3->addWidget(checkBox_id3v1);
+    hbox3->addWidget(checkBox_id3v2);
+    hbox3->addWidget(checkBox_apev2);
+    gbTags->setLayout(hbox3);
+    gbTags->setFixedHeight(75);
+
+    // Main Layout
+    QVBoxLayout* mainLayout = new QVBoxLayout;
+    mainLayout->setAlignment(Qt::AlignTop);
+    mainLayout->setSpacing(10);
+    mainLayout->addWidget(gbSource);
+    mainLayout->addWidget(gbTags);
+    widget->setLayout(mainLayout);
+}
+
+
+void MainWindow::openFile()
+{
+    QFileDialog dialog(this);
+    QString qstrPath = dialog.getOpenFileName(this, "Select file", "", "Mp3 audio files (*.mp3)");
+
+    if (!qstrPath.isEmpty())
+    {
+        lineEdit_source->setText(qstrPath);
     }
-    */
+    else
+    {
+        lineEdit_source->setText("No directory specified...");
+    }
 }
 
 void MainWindow::openFolder()
 {
-    QString qStrPath = QFileDialog::getExistingDirectory(this, tr("Select a folder"));
+    QString qstrPath = QFileDialog::getExistingDirectory(this, "Select a folder");
 
-    if (!qStrPath.isEmpty())
+    if (!qstrPath.isEmpty())
     {
-        lineEdit->setText(qStrPath);
-        
-        /*
-        std::filesystem::path input_path(qStrPath.toStdWString());
-        RemoveTags remTags;
-        remTags.processFolder(*lineEdit, input_path);
-        */
+        lineEdit_source->setText(qstrPath);
     }
     else
     {
-        lineEdit->setText(tr("No file or folder specified!"));
+        lineEdit_source->setText("No directory specified...");
     }
 }
 
-
-void MainWindow::createWidgets()
+void MainWindow::removeTags()
 {
-    QWidget* topFiller = new QWidget;
-    topFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    statusBar()->showMessage("Scanning files and removing tags...");
 
-    QWidget* widget = new QWidget;
-    setCentralWidget(widget);
-    lineEdit = new QLineEdit("No file or folder specified!");
-    lineEdit->setReadOnly(true);
+    std::filesystem::path input_path(lineEdit_source->text().toStdWString());
 
-    QHBoxLayout* buttons = new QHBoxLayout;
-    QCheckBox* cb1 = new QCheckBox(tr("ID3v1"), this);
-    buttons->addWidget(cb1);
-    QCheckBox* cb2 = new QCheckBox(tr("ID3v2"), this);
-    buttons->addWidget(cb2);
-    QCheckBox* cb3 = new QCheckBox(tr("APEv2"), this);
-    buttons->addWidget(cb3);
-    pbRemoveTags = new QPushButton(tr("Remove tags"), this);
-    pbRemoveTags->setFixedSize(100, 40);
-    buttons->addWidget(pbRemoveTags);
-    QPushButton* pbClearSource = new QPushButton(tr("Clear source"), this);
-    pbClearSource->setFixedSize(100, 40);
-    buttons->addWidget(pbClearSource);
-
-
-    QWidget* bottomFiller = new QWidget;
-    bottomFiller->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-
-
-    QVBoxLayout* layout = new QVBoxLayout;
-    layout->setContentsMargins(5, 5, 5, 5);
-    layout->addWidget(topFiller);
-    layout->addWidget(lineEdit);
-    layout->addLayout(buttons);
-    layout->addWidget(bottomFiller);
-    widget->setLayout(layout);
-}
-
-void MainWindow::createActions()
-{
-    openFilesAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentOpen), tr("&Open file(s)"), this);
-    openFilesAct->setStatusTip(tr("Add file(s)"));
-    connect(openFilesAct, &QAction::triggered, this, &MainWindow::openFiles);
-
-    openFolderAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::FolderOpen), tr("&Open folder"), this);
-    openFolderAct->setStatusTip(tr("Add a folder"));
-    connect(openFolderAct, &QAction::triggered, this, &MainWindow::openFolder);
-
-    exitAct = new QAction(QIcon::fromTheme(QIcon::ThemeIcon::ApplicationExit), tr("E&xit"), this);
-    exitAct->setStatusTip(tr("Exit the application"));
-    connect(exitAct, &QAction::triggered, this, &QWidget::close);
-}
-
-void MainWindow::createMenus()
-{
-    //menuBar = new QMenuBar(this);
-
-    fileMenu = menuBar()->addMenu(tr("&File"));
-    fileMenu->addAction(openFilesAct);
-    fileMenu->addAction(openFolderAct);
-
-    fileMenu->addSeparator();
-    fileMenu->addAction(exitAct);
+    RemoveTags::run(statusBar(), input_path, checkBox_subdirs->isChecked(), checkBox_id3v1->isChecked(), checkBox_id3v2->isChecked(), checkBox_apev2->isChecked());
 }
