@@ -49,14 +49,12 @@ class RemoveTags
 	struct Files
 	{
 		int						found = 0;
-		int						scanned = 0;
 		int						updated = 0;
 		int						ignored = 0;
 
 		Files& operator += (const Files& rhs)
 		{
 			found += rhs.found;
-			scanned += rhs.scanned;
 			updated += rhs.updated;
 			ignored += rhs.ignored;
 			return *this;
@@ -72,11 +70,12 @@ class RemoveTags
 	static int get_id3v2_size(std::ifstream& _file_stream);
 	static int get_ape_size(std::ifstream& _file_stream, std::streamsize _id3v1_offset);
 	
-	static int removeTags(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2);
-	static Files checkFile(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2);
+	static int remove_tags(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2);
+	static Files check_file(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2);
 
 
 public:
 
-	static void start(QStatusBar* statusBar, std::filesystem::path sourcePath, bool inclSubdirs, bool id3v1, bool id3v2, bool apev2);
+	static void process_directory(QStatusBar* statusBar, std::filesystem::path sourcePath, bool inclSubdirs, bool id3v1, bool id3v2, bool apev2);
+	static void process_file(QStatusBar* statusBar, std::filesystem::path sourcePath, bool id3v1, bool id3v2, bool apev2);
 };

@@ -76,9 +76,10 @@ int RemoveTags::get_ape_size(std::ifstream& _file_stream, std::streamsize _id3v1
 	return 0;
 }
 
-int RemoveTags::removeTags(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2)
+int RemoveTags::remove_tags(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2)
 {
 	std::ifstream file_stream(filePath, std::ios::binary);
+	file_stream.close(); //---------------------------------------------------------->>>>> REMOVE AFTER TESTING
 	if (!file_stream.is_open())
 	{
 		//std::println("Cannot open file!");
@@ -135,25 +136,23 @@ int RemoveTags::removeTags(std::filesystem::path filePath, bool id3v1, bool id3v
 	return 0;
 }
 
-RemoveTags::Files RemoveTags::checkFile(std::filesystem::path filePath, bool id3v1, bool id3v2, bool apev2)
+RemoveTags::Files RemoveTags::check_file(std::filesystem::path path, bool id3v1, bool id3v2, bool apev2)
 {
 	Files file;
 
-	if (!std::filesystem::is_regular_file(filePath))
+	if (!std::filesystem::is_regular_file(path))
 	{
 		return file;
 	}
 	
-	file.found++;
-
-	if (filePath.extension() == ".mp3" ||
-		filePath.extension() == ".MP3" ||
-		filePath.extension() == ".mP3" ||
-		filePath.extension() == ".Mp3")
+	if (path.extension() == ".mp3" ||
+		path.extension() == ".MP3" ||
+		path.extension() == ".mP3" ||
+		path.extension() == ".Mp3")
 	{
-		file.scanned++;
+		file.found++;
 
-		int returnCode = removeTags(filePath, id3v1, id3v2, apev2);
+		int returnCode = remove_tags(path, id3v1, id3v2, apev2);
 		
 		if (returnCode > 0)
 		{
@@ -168,22 +167,15 @@ RemoveTags::Files RemoveTags::checkFile(std::filesystem::path filePath, bool id3
 	return file;
 }
 
-void RemoveTags::start(QStatusBar* statusBar, std::filesystem::path sourcePath, bool inclSubdirs, bool id3v1, bool id3v2, bool apev2)
+void RemoveTags::process_directory(QStatusBar* statusBar, std::filesystem::path sourcePath, bool inclSubdirs, bool id3v1, bool id3v2, bool apev2)
 {
-	if (!std::filesystem::exists(sourcePath) ||
-		!std::filesystem::is_directory(sourcePath))
-	{
-		statusBar->showMessage("Directory not found or incorrect");
-		return;
-	}
-
 	Files files;
 
 	if (inclSubdirs)
 	{
 		for (const auto& item : std::filesystem::recursive_directory_iterator(sourcePath, std::filesystem::directory_options::skip_permission_denied))
 		{
-			Files file = checkFile(item.path(), id3v1, id3v2, apev2);
+			Files file = check_file(item.path(), id3v1, id3v2, apev2);
 			files += file;
 		}
 	}
@@ -191,14 +183,47 @@ void RemoveTags::start(QStatusBar* statusBar, std::filesystem::path sourcePath, 
 	{
 		for (const auto& item : std::filesystem::directory_iterator(sourcePath, std::filesystem::directory_options::skip_permission_denied))
 		{
-			Files file = checkFile(item.path(), id3v1, id3v2, apev2);
+			Files file = check_file(item.path(), id3v1, id3v2, apev2);
 			files += file;
 		}
 	}
 
-	statusBar->showMessage(
-		"Scan complete | Files scanned : " + QString::number(files.scanned) +
-		" | Files updated : " + QString::number(files.updated) +
-		" | Files ignored : " + QString::number(files.ignored)
-	);
+	QString message;
+
+	if (files.found == 0)
+	{
+		message = "No mp3 files found";
+	}
+	else
+	{
+		message = "Files found : " + QString::number(files.found) +	" | Files updated : " + QString::number(files.updated);
+
+		if (files.ignored > 0)
+		{
+			message.append(" | Rear/write errors : " + QString::number(files.ignored));
+		}
+	}
+
+	statusBar->showMessage(message);
+}
+
+void RemoveTags::process_file(QStatusBar* statusBar, std::filesystem::path sourcePath, bool id3v1, bool id3v2, bool apev2)
+{
+	Files files;
+
+	Files file = check_file(sourcePath, id3v1, id3v2, apev2);
+	files += file;
+	
+	if (files.updated > 0)
+	{
+		statusBar->showMessage("Tags removed");
+	}
+	else if (files.ignored > 0)
+	{
+		statusBar->showMessage("Read/write error");
+	}
+	else
+	{
+		statusBar->showMessage("No tags found");
+	}
 }

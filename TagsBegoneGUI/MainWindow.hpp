@@ -34,5 +34,12 @@ private slots:
     void selectFile();
     void selectDir();
     void removeTags();
+    void updateRemoveTagsButton();
+
+
+signals:
+
+    void selectionChanged(const QItemSelection& selected);
+
 };
 
