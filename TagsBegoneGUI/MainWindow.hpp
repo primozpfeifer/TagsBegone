@@ -22,7 +22,7 @@ private:
     void createWidgets();
 
     QLineEdit* lineEdit_source;
-    QCheckBox* checkBox_subdirs;
+    QCheckBox* checkBox_inclSubdirs;
     QPushButton* button_removeTags;
     QCheckBox* checkBox_id3v1;
     QCheckBox* checkBox_id3v2;
@@ -31,8 +31,8 @@ private:
 
 private slots:
 
-    void openFile();
-    void openFolder();
+    void selectFile();
+    void selectDir();
     void removeTags();
 };
 

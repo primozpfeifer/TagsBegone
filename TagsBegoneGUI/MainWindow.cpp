@@ -21,15 +21,15 @@ void MainWindow::createMenus()
     // menu FILE
     QMenu* menu_file = menuBar()->addMenu("&File");
 
-    QAction* act_openFile = new QAction("&Select file", this);
-    menu_file->addAction(act_openFile);
-    connect(act_openFile, &QAction::triggered, this, &MainWindow::openFile);
-    act_openFile->setStatusTip("Select file");
+    QAction* act_selectFile = new QAction("&Select file", this);
+    menu_file->addAction(act_selectFile);
+    connect(act_selectFile, &QAction::triggered, this, &MainWindow::selectFile);
+    act_selectFile->setStatusTip("Select a file");
 
-    QAction* act_openFolder = new QAction("&Select folder", this);
-    menu_file->addAction(act_openFolder);
-    connect(act_openFolder, &QAction::triggered, this, &MainWindow::openFolder);
-    act_openFolder->setStatusTip("Select folder");
+    QAction* act_selectDir = new QAction("&Select directory", this);
+    menu_file->addAction(act_selectDir);
+    connect(act_selectDir, &QAction::triggered, this, &MainWindow::selectDir);
+    act_selectDir->setStatusTip("Select a directory");
 
     menu_file->addSeparator();
 
@@ -43,7 +43,7 @@ void MainWindow::createMenus()
 
     QAction* act_about = new QAction("&About", this);
     menu_about->addAction(act_about);
-    connect(act_about, &QAction::triggered, this, &MainWindow::openFile);
+    connect(act_about, &QAction::triggered, this, &MainWindow::selectFile);
     act_about->setStatusTip("About the application");
 }
 
@@ -59,8 +59,8 @@ void MainWindow::createWidgets()
     QToolButton* pbDirectory = new QToolButton(this);
     pbDirectory->setText("...");
     pbDirectory->setFixedSize(30, 30);
-    connect(pbDirectory, &QToolButton::clicked, this, &MainWindow::openFolder);
-    checkBox_subdirs = new QCheckBox(" Include subdirectories", this);
+    connect(pbDirectory, &QToolButton::clicked, this, &MainWindow::selectDir);
+    checkBox_inclSubdirs = new QCheckBox(" Include subdirectories", this);
     QVBoxLayout* vbox1 = new QVBoxLayout;
     QHBoxLayout* hbox1 = new QHBoxLayout;
     QHBoxLayout* hbox2 = new QHBoxLayout;
@@ -69,7 +69,7 @@ void MainWindow::createWidgets()
     hbox1->addWidget(lineEdit_source);
     hbox1->addWidget(pbDirectory);
     vbox1->addLayout(hbox1);
-    hbox2->addWidget(checkBox_subdirs);
+    hbox2->addWidget(checkBox_inclSubdirs);
     vbox1->addLayout(hbox2);
     gbSource->setLayout(vbox1);
     gbSource->setFixedHeight(100);
@@ -85,7 +85,6 @@ void MainWindow::createWidgets()
     button_removeTags = new QPushButton("START", this);
     button_removeTags->setFixedSize(100, 40);
     connect(button_removeTags, &QPushButton::clicked, this, &MainWindow::removeTags);
-    //pbRemoveTags->setDisabled(true);
     QHBoxLayout* hbox3 = new QHBoxLayout;
     hbox3->setSpacing(30);
     hbox3->setContentsMargins(10, 0, 20, 5);
@@ -106,10 +105,10 @@ void MainWindow::createWidgets()
 }
 
 
-void MainWindow::openFile()
+void MainWindow::selectFile()
 {
     QFileDialog dialog(this);
-    QString qstrPath = dialog.getOpenFileName(this, "Select file", "", "Mp3 audio files (*.mp3)");
+    QString qstrPath = dialog.getOpenFileName(this, "Select a file", "", "Mp3 audio files (*.mp3)");
 
     if (!qstrPath.isEmpty())
     {
@@ -121,9 +120,9 @@ void MainWindow::openFile()
     }
 }
 
-void MainWindow::openFolder()
+void MainWindow::selectDir()
 {
-    QString qstrPath = QFileDialog::getExistingDirectory(this, "Select a folder");
+    QString qstrPath = QFileDialog::getExistingDirectory(this, "Select a directory");
 
     if (!qstrPath.isEmpty())
     {
@@ -141,5 +140,5 @@ void MainWindow::removeTags()
 
     std::filesystem::path input_path(lineEdit_source->text().toStdWString());
 
-    RemoveTags::run(statusBar(), input_path, checkBox_subdirs->isChecked(), checkBox_id3v1->isChecked(), checkBox_id3v2->isChecked(), checkBox_apev2->isChecked());
+    RemoveTags::start(statusBar(), input_path, checkBox_inclSubdirs->isChecked(), checkBox_id3v1->isChecked(), checkBox_id3v2->isChecked(), checkBox_apev2->isChecked());
 }
